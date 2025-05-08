@@ -36,6 +36,7 @@ services:
     networks:
       - postgres
 
+# postgres ui
   pgadmin:
     container_name: pgadmin
     image: dpage/pgadmin4
@@ -56,10 +57,70 @@ services:
     networks:
       - postgres
 
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    restart: unless-stopped
+    environment_file:
+      - ./deploy/docker/kafka-kraft.env
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    volumes:
+      - kafka:/var/lib/kafka/data
+    networks:
+      - kafka
+
+# schemas for kafka
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.5.0
+    container_name: schema_registry
+    restart: unless-stopped
+    environment_file:
+      - ./deploy/docker/schema-registry.env
+    ports:
+      - "8085:8081"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8081/subjects || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - kafka
+
+# kafka-ui
+  redpanda-console:
+    image: docker.redpanda.com/vectorized/console:latest
+    container_name: redpanda
+    restart: unless-stopped
+    environment_file:
+      - ./deploy/docker/redpanda-console.env
+    ports:
+      - "8081:8080"
+    networks:
+      - kafka
+    depends_on:
+      kafka:
+        condition: service_healthy
+      schema_registry:
+        condition: service_healthy
+
 
 networks:
   postgres:
+  kafka:
 
 volumes:
   pgdata:
   pgadmin:
+  kafka:
