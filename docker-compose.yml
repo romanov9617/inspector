@@ -61,8 +61,7 @@ services:
     image: confluentinc/cp-kafka:7.5.0
     container_name: kafka
     restart: unless-stopped
-    environment_file:
-      - ./deploy/docker/kafka-kraft.env
+    env_file: deploy/docker/kafka-kraft.env
     healthcheck:
       test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list || exit 1"]
       interval: 30s
@@ -80,10 +79,9 @@ services:
 # schemas for kafka
   schema-registry:
     image: confluentinc/cp-schema-registry:7.5.0
-    container_name: schema_registry
+    container_name: schema-registry
     restart: unless-stopped
-    environment_file:
-      - ./deploy/docker/schema-registry.env
+    env_file: deploy/docker/schema-registry.env
     ports:
       - "8085:8081"
     healthcheck:
@@ -98,22 +96,20 @@ services:
     networks:
       - kafka
 
-# kafka-ui
-  redpanda-console:
-    image: docker.redpanda.com/vectorized/console:latest
-    container_name: redpanda
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka_ui
     restart: unless-stopped
-    environment_file:
-      - ./deploy/docker/redpanda-console.env
     ports:
       - "8081:8080"
-    networks:
-      - kafka
+    env_file: deploy/docker/kafka-ui.env
     depends_on:
       kafka:
         condition: service_healthy
-      schema_registry:
+      schema-registry:
         condition: service_healthy
+    networks:
+      - kafka
 
 
 networks:
