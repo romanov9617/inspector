@@ -72,10 +72,9 @@ refactor: simplify token validation logic
 inspector/
 ├── README.md               # общий readme по проекту
 ├── docker-compose.yml      # общий docker-compose для запуска всех сервисов
-├── deploy/                 # конфигурация сторонних сервисов
-│   ├── postgres/
-│   ├── kafka/
-│   ├── pgadmin/
+├── deploy/docker                 # конфигурация сторонних сервисов
+│   ├── postgres.env
+│   ├── postgres.example.env
 │   └── ...
 ├── service-auth/          # сервис аутентификации
 │   ├── README.md
