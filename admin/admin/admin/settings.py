@@ -10,11 +10,24 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import configparser
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
+SERVER_CONFIG_PATH = os.path.join(BASE_DIR, "./config/server.conf")
+
+if not os.path.exists(SERVER_CONFIG_PATH):
+    raise FileNotFoundError("Server configuration file not found")
+
+config = configparser.ConfigParser()
+config.read(SERVER_CONFIG_PATH)
+
+
+REGULAR_API_PREFIX = "api/"
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -25,7 +38,7 @@ SECRET_KEY = "django-insecure-*vu#n95#x1l_0-t6@tm8%*#ct2w8(yrvb32(v^t3c)fy4+ag25
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []  # type: ignore
+ALLOWED_HOSTS = ["*"]  # type: ignore
 
 
 # Application definition
@@ -37,6 +50,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "admin_modules.authentication",
+    "admin_modules.annotation",
+    "admin_modules.defects",
+    "admin_modules.media",
+    "admin_modules.projects",
+    "admin_modules.ml_models",
 ]
 
 MIDDLEWARE = [
@@ -74,8 +93,12 @@ WSGI_APPLICATION = "admin.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": config.get("database", "name"),
+        "USER": config.get("database", "user"),
+        "PASSWORD": config.get("database", "password"),
+        "HOST": config.get("database", "host"),
+        "PORT": config.get("database", "port"),
     }
 }
 
