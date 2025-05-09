@@ -139,13 +139,16 @@ docker-compose up -d
 
 ### Подключение к сервисам:
 
-| Сервис          | Адрес                   | Примечание                      |
-| --------------- | ----------------------- | ------------------------------- |
-| PostgreSQL      | `localhost:5432`        | user/password из `postgres.env` |
-| pgAdmin         | `http://localhost:5050` | UI для работы с БД              |
-| Kafka           | `localhost:9092`        | Kafka брокер (KRaft)            |
-| Schema Registry | `http://localhost:8085` | REST-интерфейс схем             |
-| Kafka UI        | `http://localhost:8081` | UI-интерфейс Kafka с логином    |
+| Сервис               | Адрес                   | Примечание                               |
+| -------------------- | ----------------------- | ---------------------------------------- |
+| PostgreSQL           | `localhost:5432`        | user/password из `postgres.env`          |
+| pgAdmin              | `http://localhost:5050` | UI для работы с БД                       |
+| Kafka                | `localhost:9092`        | Kafka брокер                             |
+| Schema Registry      | `http://localhost:8085` | REST-интерфейс схем                      |
+| Kafka UI             | `http://localhost:8081` | UI-интерфейс Kafka (Provectus Kafka UI)  |
+| MinIO API            | `http://localhost:9000` | S3-совместимое API, creds из `minio.env` |
+| MinIO Console UI     | `http://localhost:9001` | Web UI для управления бакетами           |
+
 
 ### Авторизация Kafka UI:
 
@@ -166,6 +169,15 @@ Email: pgadmin@example.com
 
 Настраивается в `pgadmin.env`
 
+### Авторизация MinioUI:
+
+Логин и пароль задаются в `.env`:
+
+По умолчанию доступ через
+```
+minioadmin / minioadmin
+```
+
 ### Используемые `.env` файлы:
 
 * `postgres.env` — настройки PostgreSQL
@@ -173,3 +185,4 @@ Email: pgadmin@example.com
 * `kafka-kraft.env` — параметры Kafka без ZooKeeper (KRaft)
 * `schema-registry.env` — включение поддержки без ZooKeeper
 * `kafka-ui.env` — конфигурация интерфейса Kafka с авторизацией
+* `minio.env` — настройки minio
