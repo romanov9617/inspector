@@ -14,6 +14,8 @@ import configparser
 import os
 from pathlib import Path
 
+from admin.container import S3s
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -103,6 +105,16 @@ DATABASES = {
         "PORT": config.get("database", "port"),
     }
 }
+
+
+S3s.config.from_dict(
+    {
+    'region_name': config.get("s3", "region_name"),
+    'access_key_id': config.get("s3", "access_key_id"),
+    'secret_access_key': config.get("s3", "secret_access_key"),
+}
+)
+
 
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",

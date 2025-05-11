@@ -24,6 +24,8 @@ class ImageStatus(models.TextChoices):
 class Image(UUIDModel, TimestampModel):
     file_key = models.CharField(max_length=512, unique=True)
     original_filename = models.CharField(max_length=512, blank=True)
+    original_size = models.IntegerField(null=True, blank=True)
+    original_checksum = models.CharField(max_length=64, null=True, blank=True)
     width_px = models.IntegerField(null=True, blank=True)
     height_px = models.IntegerField(null=True, blank=True)
     status = models.CharField(max_length=50, choices=ImageStatus, default=ImageStatus.PENDING_UPLOAD)
