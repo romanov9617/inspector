@@ -6,9 +6,7 @@ from admin_modules.core.models.mixins import UUIDModel
 
 
 class ImageStatus(models.TextChoices):
-    PENDING_UPLOAD    = 'pending_upload',    'Ожидает загрузки'
-    UPLOADED          = 'uploaded',          'Загружено'
-    UPLOAD_ERROR      = 'upload_error',      'Ошибка загрузки'
+    PROCCESS_PENDING = "process_pending"
     PROCESSING        = 'processing',        'В обработке'
     PROCESSED         = 'processed',         'Обработка завершена'
     ANNOTATION_PENDING = 'annotation_pending','Готово к разметке'
@@ -21,17 +19,36 @@ class ImageStatus(models.TextChoices):
     ARCHIVED          = 'archived',          'Архивировано'
     ERROR             = 'error',             'Ошибка'
 
+
+class UploadStatus(models.TextChoices):
+    INIT = "init"
+    SUCCESS = "success"
+    ERROR = "error"
+
+class UploadSession(UUIDModel,TimestampModel):
+    user            = models.ForeignKey(User, on_delete=models.PROTECT)
+    filename        = models.CharField(max_length=255)
+    expected_size   = models.BigIntegerField()
+    sha256          = models.CharField(max_length=64)
+    multipart_id    = models.CharField(max_length=255, blank=True, null=True)
+    idempotency_key = models.CharField(max_length=255, unique=True)
+    status          = models.CharField(max_length=20, choices=UploadStatus, default=UploadStatus.INIT)
+    created_at      = models.DateTimeField(auto_now_add=True)
+    completed_at    = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        db_table = "upload_session"
+
+    def s3_key(self):
+        return f"{self.id}/{self.filename}"
+
+
 class Image(UUIDModel, TimestampModel):
+    session = models.ForeignKey(UploadSession, on_delete=models.PROTECT, null=True)
     file_key = models.CharField(max_length=512, unique=True)
-    original_filename = models.CharField(max_length=512, blank=True)
-    original_size = models.IntegerField(null=True, blank=True)
-    original_checksum = models.CharField(max_length=64, null=True, blank=True)
     width_px = models.IntegerField(null=True, blank=True)
     height_px = models.IntegerField(null=True, blank=True)
-    status = models.CharField(max_length=50, choices=ImageStatus, default=ImageStatus.PENDING_UPLOAD)
-    uploader = models.ForeignKey(
-        User, on_delete=models.PROTECT, related_name="uploaded_images"
-    )
+    status = models.CharField(max_length=50, choices=ImageStatus, default=ImageStatus.PROCCESS_PENDING)
 
     class Meta:
         db_table = "image"
