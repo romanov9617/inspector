@@ -176,3 +176,5 @@ cython_debug/
 # env
 *.env
 !*.example.env
+server.conf
+!*.example.conf
