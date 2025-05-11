@@ -14,6 +14,7 @@ import configparser
 import os
 from pathlib import Path
 
+from admin.container import RedisContainer
 from admin.container import S3s
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -106,14 +107,25 @@ DATABASES = {
     }
 }
 
+AWS_S3_REGION_NAME = config.get("s3", "region_name")
+AWS_STORAGE_BUCKET_NAME = config.get("s3", "bucket_name")
 
 S3s.config.from_dict(
     {
-    'region_name': config.get("s3", "region_name"),
+    'region_name': AWS_S3_REGION_NAME,
     'access_key_id': config.get("s3", "access_key_id"),
     'secret_access_key': config.get("s3", "secret_access_key"),
 }
 )
+S3s.upload_role_arn.from_value(config.get("s3", "upload_role_arn"))
+
+REDIS_HOST = config.get("redis", "host")
+REDIS_PORT = config.get("redis", "port")
+
+REDIS_URL = f"redis://:{config.get("redis", "password")}@{REDIS_HOST}:{REDIS_PORT}/0"
+
+
+RedisContainer.config.url.from_value(REDIS_URL)
 
 
 REST_FRAMEWORK = {

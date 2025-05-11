@@ -18,7 +18,12 @@ class ImageSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class InitUploadSerializer(serializers.ModelSerializer):
+class ImageInitUploadSerializer(serializers.Serializer):
+
     original_filename = serializers.CharField(max_length=255)
     original_size = serializers.IntegerField()
     original_checksum = serializers.CharField(max_length=64)
+
+class InitUploadSerializer(serializers.Serializer):
+
+    files = ImageInitUploadSerializer(many=True)

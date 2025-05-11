@@ -33,7 +33,6 @@ class UploadSession(UUIDModel,TimestampModel):
     multipart_id    = models.CharField(max_length=255, blank=True, null=True)
     idempotency_key = models.CharField(max_length=255, unique=True)
     status          = models.CharField(max_length=20, choices=UploadStatus, default=UploadStatus.INIT)
-    created_at      = models.DateTimeField(auto_now_add=True)
     completed_at    = models.DateTimeField(blank=True, null=True)
 
     class Meta:
@@ -48,6 +47,9 @@ class Image(UUIDModel, TimestampModel):
     file_key = models.CharField(max_length=512, unique=True)
     width_px = models.IntegerField(null=True, blank=True)
     height_px = models.IntegerField(null=True, blank=True)
+    original_size = models.BigIntegerField(null=True, blank=True)
+    original_checksum = models.CharField(max_length=128, null=True, blank=True)
+    is_verified = models.BooleanField(default=False) # is size and checksum are equal to real file in s3?
     status = models.CharField(max_length=50, choices=ImageStatus, default=ImageStatus.PROCCESS_PENDING)
 
     class Meta:
