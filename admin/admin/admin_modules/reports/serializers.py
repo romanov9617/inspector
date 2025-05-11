@@ -1,18 +1,18 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from admin_modules.media.models import Image
+from admin_modules.reports.models import Report
 
 User = get_user_model()
 
 
-class ImageSerializer(serializers.ModelSerializer):
+class ReportSerializer(serializers.ModelSerializer):
 
-    uploader = serializers.PrimaryKeyRelatedField(
+    author = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(),
         default=serializers.CurrentUserDefault(),
     )
 
     class Meta:
-        model = Image
+        model = Report
         fields = "__all__"

@@ -1,9 +1,9 @@
 from rest_framework import viewsets
 
-from admin_modules.ml_models.models import ModelEntry
+from admin_modules.ml_models.models import MLModel
 from admin_modules.ml_models.serilaizers import MLModelSerializer
 
 
 class MLModelViewSet(viewsets.ModelViewSet):
-    queryset = ModelEntry.objects.all()
+    queryset = MLModel.objects.all()
     serializer_class = MLModelSerializer

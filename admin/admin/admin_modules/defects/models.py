@@ -1,14 +1,14 @@
-import uuid
-
-from admin_modules.authentication.models import User
-from admin_modules.media.models import Image
-from admin_modules.ml_models.models import ModelEntry
 from django.db import models
 from django.db.models.fields.json import JSONField
 
+from admin.settings import AUTH_USER_MODEL as User
+from admin_modules.core.models.mixins import TimestampModel
+from admin_modules.core.models.mixins import UUIDModel
+from admin_modules.media.models import Image
+from admin_modules.ml_models.models import MLModel
 
-class Defect(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+class Defect(UUIDModel, TimestampModel):
     image = models.ForeignKey(Image, on_delete=models.CASCADE, related_name="defects")
     class_code = models.SmallIntegerField()
     bbox_x1 = models.FloatField()
@@ -19,18 +19,18 @@ class Defect(models.Model):
     confidence = models.DecimalField(max_digits=4, decimal_places=3)
     severity = models.DecimalField(max_digits=4, decimal_places=2)
     model = models.ForeignKey(
-        ModelEntry, on_delete=models.PROTECT, related_name="defects"
+        MLModel, on_delete=models.PROTECT, related_name="defects"
     )
     source = models.CharField(max_length=50, default="model")
-    last_version = models.IntegerField(default=0)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "defect"
 
     def __str__(self):
         return f"Defect {self.id} on image {self.image.id}"
 
 
-class DefectVersion(models.Model):
+class DefectVersion(TimestampModel):
     defect = models.ForeignKey(
         Defect, on_delete=models.CASCADE, related_name="versions"
     )
@@ -39,9 +39,9 @@ class DefectVersion(models.Model):
         User, on_delete=models.PROTECT, related_name="defect_versions"
     )
     payload = JSONField()
-    changed_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        db_table = "defect_version"
         unique_together = (("defect", "version"),)
         ordering = ["-version"]
 

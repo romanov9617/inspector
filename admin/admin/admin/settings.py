@@ -51,13 +51,13 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    'rest_framework_simplejwt.token_blacklist',
+    'djoser',
     "drf_spectacular",
-    "admin_modules.authentication",
-    "admin_modules.annotation",
     "admin_modules.defects",
     "admin_modules.media",
-    "admin_modules.projects",
     "admin_modules.ml_models",
+    "admin_modules.reports",
 ]
 
 MIDDLEWARE = [
@@ -106,7 +106,28 @@ DATABASES = {
 
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+  'DEFAULT_AUTHENTICATION_CLASSES': (
+    'rest_framework_simplejwt.authentication.JWTAuthentication',
+  ),
+  'DEFAULT_PERMISSION_CLASSES': (
+    'rest_framework.permissions.IsAuthenticated',
+  ),
 }
+
+SIMPLE_JWT = {
+  'AUTH_HEADER_TYPES': ('Bearer',),
+  # остальные настройки по вкусу
+}
+
+DJOSER = {
+  'USER_CREATE_PASSWORD_RETYPE': True,
+  'PASSWORD_RESET_CONFIRM_URL': REGULAR_API_PREFIX+'auth/users/reset_password_confirm/{uid}/{token}',
+  'SEND_ACTIVATION_EMAIL': False,  # или True, если хотите двойную верификацию
+  # можно переопределить сериализаторы, шаблоны email и т.д.
+}
+
+# Для разработки можно отправлять письма в консоль
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 
 SPECTACULAR_SETTINGS = {
@@ -114,6 +135,8 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
 }
+
+AUTH_USER_MODEL = 'auth.User'
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

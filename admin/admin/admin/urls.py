@@ -15,13 +15,12 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
-from admin_modules.annotation.urls import urlpatterns as annotation_urls
-from admin_modules.authentication.urls import urlpatterns as authentication_urls
 from admin_modules.defects.urls import urlpatterns as defects_urls
 from admin_modules.media.urls import urlpatterns as media_urls
 from admin_modules.ml_models.urls import urlpatterns as ml_models_urls
-from admin_modules.projects.urls import urlpatterns as projects_urls
+from admin_modules.reports.urls import urlpatterns as report_urls
 from django.contrib import admin
+from django.urls import include
 from django.urls import path
 from drf_spectacular.views import SpectacularAPIView
 from drf_spectacular.views import SpectacularRedocView
@@ -31,13 +30,13 @@ from admin.settings import REGULAR_API_PREFIX
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path(f'{REGULAR_API_PREFIX}auth/users/', include('djoser.urls')),
+    path(f'{REGULAR_API_PREFIX}auth/', include('djoser.urls.jwt')),
     path(f"{REGULAR_API_PREFIX}schema/", SpectacularAPIView.as_view(), name="schema"),
-    *projects_urls,
     *media_urls,
     *defects_urls,
     *ml_models_urls,
-    *authentication_urls,
-    *annotation_urls,
+    *report_urls,
     # Optional UI:
     path(
         f"{REGULAR_API_PREFIX}docs/",
