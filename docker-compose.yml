@@ -149,14 +149,36 @@ services:
     networks:
       - object-storage
 
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    command: [
+      "redis-server",
+      "--appendonly", "yes"
+    ]
+    volumes:
+      - redis:/data
+    restart: unless-stopped
+    networks:
+      - redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "$${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
 
 networks:
   postgres:
   kafka:
   object-storage:
+  redis:
 
 volumes:
   pgdata:
   pgadmin:
   kafka:
   minio:
+  redis:

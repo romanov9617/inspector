@@ -12,10 +12,11 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 import configparser
 import os
+from datetime import timedelta
 from pathlib import Path
 
-from admin.container import RedisContainer
-from admin.container import S3s
+import boto3
+from redis import Redis  # type: ignore
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -61,6 +62,7 @@ INSTALLED_APPS = [
     "admin_modules.media",
     "admin_modules.ml_models",
     "admin_modules.reports",
+    "admin_modules.oidc",
 ]
 
 MIDDLEWARE = [
@@ -107,25 +109,22 @@ DATABASES = {
     }
 }
 
-AWS_S3_REGION_NAME = config.get("s3", "region_name")
+AWS_REGION_NAME = config.get("s3", "region_name")
 AWS_STORAGE_BUCKET_NAME = config.get("s3", "bucket_name")
+AWS_HOST = config.get("s3", "host")
+AWS_PORT = config.get("s3", "port")
 
-S3s.config.from_dict(
-    {
-    'region_name': AWS_S3_REGION_NAME,
-    'access_key_id': config.get("s3", "access_key_id"),
-    'secret_access_key': config.get("s3", "secret_access_key"),
-}
+S3_CLIENT= boto3.client(
+    "s3",
+    endpoint_url=f"http://{AWS_HOST}:{AWS_PORT}",
+    aws_access_key_id=config.get("s3", "access_key_id"),
+    aws_secret_access_key=config.get("s3", "secret_access_key"),
+    region_name=AWS_REGION_NAME
 )
-S3s.upload_role_arn.from_value(config.get("s3", "upload_role_arn"))
 
 REDIS_HOST = config.get("redis", "host")
 REDIS_PORT = config.get("redis", "port")
-
-REDIS_URL = f"redis://:{config.get("redis", "password")}@{REDIS_HOST}:{REDIS_PORT}/0"
-
-
-RedisContainer.config.url.from_value(REDIS_URL)
+REDIS_CLIENT = Redis(host=REDIS_HOST, port=REDIS_PORT, db=0)
 
 
 REST_FRAMEWORK = {
@@ -138,16 +137,29 @@ REST_FRAMEWORK = {
   ),
 }
 
+with open("./.certs/private.key") as file:
+    SIGNING_KEY = file.read()
+
+with open("./.certs/public.key") as file:
+    VERIFYING_KEY = file.read()
+
 SIMPLE_JWT = {
   'AUTH_HEADER_TYPES': ('Bearer',),
-  # остальные настройки по вкусу
+  "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+  "REFRESH_TOKEN_LIFETIME": timedelta(minutes=720),
+  "ROTATE_REFRESH_TOKENS":True,
+  "BLACKLIST_AFTER_ROTATION": True,
+  "ALGORITHM": "RS256",
+  "SIGNING_KEY":SIGNING_KEY,
+  "VERIFYING_KEY": VERIFYING_KEY,
+  "USER_ID_FIELD": "id",
+  "USER_ID_CLAIM": "sub"
 }
 
 DJOSER = {
   'USER_CREATE_PASSWORD_RETYPE': True,
   'PASSWORD_RESET_CONFIRM_URL': REGULAR_API_PREFIX+'auth/users/reset_password_confirm/{uid}/{token}',
   'SEND_ACTIVATION_EMAIL': False,  # или True, если хотите двойную верификацию
-  # можно переопределить сериализаторы, шаблоны email и т.д.
 }
 
 # Для разработки можно отправлять письма в консоль
