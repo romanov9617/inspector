@@ -6,13 +6,13 @@
 Принимает сырые байты изображений (JPEG/PNG) через Kafka, выполняет предсказание выбранной модели и возвращает аннотированное изображение.
 
 ## Структура на текущий момент 
-
+```
 service-ml/
 ├── README.md
 ├── Dockerfile
 ├── docker-compose.yml
 ├── requirements.txt
-├── datasets/
+├── datasets/ #держим только локально 
 │   ├── unetpp-format/      
 │   │   └── .gitkeep
 │   └── yolo-format/        
@@ -34,3 +34,4 @@ service-ml/
     ├── inference.py        # подписка на Kafka и публикация аннотированных изображений
     ├── model.py            # загрузка модели и метод predict()
     └── utils.py            # конвертация байтов ↔ Image, отрисовка bbox и масок
+```
