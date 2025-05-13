@@ -16,6 +16,7 @@ from datetime import timedelta
 from pathlib import Path
 
 import boto3
+from jwcrypto import jwk
 from redis import Redis  # type: ignore
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -127,6 +128,12 @@ REDIS_PORT = config.get("redis", "port")
 REDIS_CLIENT = Redis(host=REDIS_HOST, port=REDIS_PORT, db=0)
 
 
+SERVICE_NAME = config.get("api", "name")
+SERVICE_PORT = config.get("api", "port")
+SERVICE_HASH_ALGO = config.get("hash", "algo")
+SERVICE_PRIVATE_KEY = config.get("hash", "private_key")
+SERVICE_PUBLIC_KEY = config.get("hash", "public_key")
+
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
   'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -137,11 +144,18 @@ REST_FRAMEWORK = {
   ),
 }
 
-with open("./.certs/private.key") as file:
+with open(SERVICE_PRIVATE_KEY) as file:
     SIGNING_KEY = file.read()
 
-with open("./.certs/public.key") as file:
+with open(SERVICE_PUBLIC_KEY) as file:
     VERIFYING_KEY = file.read()
+
+with open(SERVICE_PUBLIC_KEY, "rb") as f:
+        SIGNING_KEY_OBJ = jwk.JWK.from_pem(f.read())
+
+SIGNING_KID = SIGNING_KEY_OBJ.thumbprint()  # или свой ID
+
+
 
 SIMPLE_JWT = {
   'AUTH_HEADER_TYPES': ('Bearer',),
@@ -149,11 +163,13 @@ SIMPLE_JWT = {
   "REFRESH_TOKEN_LIFETIME": timedelta(minutes=720),
   "ROTATE_REFRESH_TOKENS":True,
   "BLACKLIST_AFTER_ROTATION": True,
-  "ALGORITHM": "RS256",
+  "ALGORITHM": SERVICE_HASH_ALGO,
   "SIGNING_KEY":SIGNING_KEY,
   "VERIFYING_KEY": VERIFYING_KEY,
   "USER_ID_FIELD": "id",
-  "USER_ID_CLAIM": "sub"
+  "USER_ID_CLAIM": "sub",
+  "TOKEN_OBTAIN_SERIALIZER": "admin_modules.core.serializers.token.MyTokenObtainPairSerializer",
+
 }
 
 DJOSER = {

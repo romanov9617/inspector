@@ -178,4 +178,4 @@ cython_debug/
 !*.example.env
 server.conf
 !*.example.conf
-admin/admin/.certs/*
+admin/.certs/*

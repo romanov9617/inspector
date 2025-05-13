@@ -18,8 +18,9 @@ Including another URLconf
 from admin_modules.defects.urls import urlpatterns as defects_urls
 from admin_modules.media.urls import urlpatterns as media_urls
 from admin_modules.ml_models.urls import urlpatterns as ml_models_urls
-from admin_modules.oidc.views import jwks
-from admin_modules.oidc.views import openid_configuration
+from admin_modules.oidc.views import HealthCheckView
+from admin_modules.oidc.views import JWKSView
+from admin_modules.oidc.views import OpenIDConfigurationView
 from admin_modules.reports.urls import urlpatterns as report_urls
 from django.contrib import admin
 from django.urls import include
@@ -32,8 +33,9 @@ from admin.settings import REGULAR_API_PREFIX
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path(".well-known/openid-configuration", openid_configuration),
-    path("jwks.json", jwks),
+    path(".well-known/openid-configuration", OpenIDConfigurationView.as_view(), name="openid-config"),
+    path("jwks.json", JWKSView.as_view(), name="jwks"),
+    path(f"{REGULAR_API_PREFIX}health/", HealthCheckView.as_view(), name="health-check"),
     path(f'{REGULAR_API_PREFIX}auth/users/', include('djoser.urls')),
     path(f'{REGULAR_API_PREFIX}auth/', include('djoser.urls.jwt')),
     path(f"{REGULAR_API_PREFIX}schema/", SpectacularAPIView.as_view(), name="schema"),

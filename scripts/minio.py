@@ -19,7 +19,9 @@ def apply_user_policy(user_id: str) -> str:
     with tempfile.NamedTemporaryFile("w+", delete=False, suffix=".json") as tmp:
         tmp.write(rendered)
         tmp.flush()
-        subprocess.run(["mc", "alias", "set", MC_ALIAS, "http://localhost:9000", "minioadmin", "minioadmin"], check=True)
+        process = subprocess.run(["mc", "alias", "set", MC_ALIAS, "http://localhost:9000", "minioadmin", "minioadmin"], check=True)
+        print(process.stderr)
+
         process = subprocess.run(["mc", "admin", "policy", "create", MC_ALIAS, policy_name, tmp.name], check=True)
         print(process.stderr)
         os.unlink(tmp.name)
@@ -27,4 +29,4 @@ def apply_user_policy(user_id: str) -> str:
     return policy_name
 
 
-apply_user_policy("2")
+apply_user_policy("1")
