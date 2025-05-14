@@ -75,6 +75,7 @@ services:
       - kafka:/var/lib/kafka/data
     networks:
       - kafka
+      - object-storage
 
 # schemas for kafka
   schema-registry:
@@ -125,8 +126,11 @@ services:
     restart: unless-stopped
     networks:
       - object-storage
+      - kafka
     depends_on:
       admin:
+        condition: service_healthy
+      kafka:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:9000/minio/health/ready || exit 1"]
@@ -145,6 +149,7 @@ services:
       /bin/sh -c "
         mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD;
         mc mb -p local/inspector;
+        mc event add local/inspector arn:minio:sqs::_:kafka || true;
         exit 0;
       "
     env_file:

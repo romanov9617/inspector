@@ -1,3 +1,5 @@
+import boto3
+import boto3.session
 from jinja2 import Template
 import subprocess
 import tempfile
@@ -28,5 +30,26 @@ def apply_user_policy(user_id: str) -> str:
 
     return policy_name
 
+def upload_file():
+    session = boto3.session.Session(
+    aws_access_key_id='PLVRRKWC556OVEEWJKM2',
+    aws_secret_access_key='J11vKudVNmCt0WJrfR+0IByNXdJ0vZtI3tUbN9xv',
+    aws_session_token='eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NLZXkiOiJQTFZSUktXQzU1Nk9WRUVXSktNMiIsImF1ZCI6ImFkbWluIiwiZXhwIjoxNzQ3Mjc1ODMwLCJpYXQiOjE3NDcyMzI2MzAsImp0aSI6IjFlNGJlYjY3ZDk3ODQwOTFhYWYwOGYxODllNDk4NzRjIiwic3ViIjoidXNlci0xIiwidG9rZW5fdHlwZSI6ImFjY2VzcyJ9.PnThbnhnnJmFdDmE7kO-119L-fOSKdxd9z-4TjjHrIG9gx7jJAGzoleabCtZ-pW_mhrqR57kYgLhjJQJ_kLF8g'
+)
 
-apply_user_policy("1")
+# создаём клиент S3, указывая endpoint MinIO
+    s3 = session.client(
+        's3',
+        endpoint_url='http://localhost:9000',
+        config=boto3.session.Config(signature_version='s3v4')
+    )
+
+    # загружаем файл
+    s3.upload_file(
+        Filename='test.txt',
+        Bucket='inspector',
+        Key='uploads/2/test.txt')
+
+# apply_user_policy("1")
+
+upload_file()
