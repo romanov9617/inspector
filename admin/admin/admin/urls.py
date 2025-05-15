@@ -22,6 +22,7 @@ from admin_modules.oidc.views import HealthCheckView
 from admin_modules.oidc.views import JWKSView
 from admin_modules.oidc.views import OpenIDConfigurationView
 from admin_modules.reports.urls import urlpatterns as report_urls
+from admin_modules.users.urls import urlpatterns as user_urls
 from django.contrib import admin
 from django.urls import include
 from django.urls import path
@@ -36,13 +37,14 @@ urlpatterns = [
     path(".well-known/openid-configuration", OpenIDConfigurationView.as_view(), name="openid-config"),
     path("jwks.json", JWKSView.as_view(), name="jwks"),
     path(f"{REGULAR_API_PREFIX}health/", HealthCheckView.as_view(), name="health-check"),
-    path(f'{REGULAR_API_PREFIX}auth/users/', include('djoser.urls')),
+    # path(f'{REGULAR_API_PREFIX}auth/users/', include('djoser.urls')),
     path(f'{REGULAR_API_PREFIX}auth/', include('djoser.urls.jwt')),
     path(f"{REGULAR_API_PREFIX}schema/", SpectacularAPIView.as_view(), name="schema"),
     *media_urls,
     *defects_urls,
     *ml_models_urls,
     *report_urls,
+    *user_urls,
     # Optional UI:
     path(
         f"{REGULAR_API_PREFIX}docs/",

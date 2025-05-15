@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     "admin_modules.ml_models",
     "admin_modules.reports",
     "admin_modules.oidc",
+    "admin_modules.users"
 ]
 
 MIDDLEWARE = [

@@ -28,8 +28,12 @@ COPY . .
 FROM python:3.12-alpine
 
 # Установка только нужных зависимостей
-RUN apk add --no-cache libffi openssl curl && \
-    adduser -D admin
+RUN apk add --no-cache libffi openssl curl ca-certificates && \
+    # Установка MinIO Client (mc)
+    curl -fsSL https://dl.min.io/client/mc/release/linux-amd64/mc -o /usr/local/bin/mc && \
+    chmod +x /usr/local/bin/mc && \
+    addgroup -S admin && \
+    adduser -D -G admin admin
 
 WORKDIR /app
 
@@ -43,8 +47,6 @@ RUN mkdir -p .certs && \
     openssl rsa -in .certs/private.key -pubout -out .certs/public.key
 
 RUN chown -R admin:admin /app
-
-
 
 ENV PYTHONUNBUFFERED=1
 
