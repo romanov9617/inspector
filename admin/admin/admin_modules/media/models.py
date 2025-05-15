@@ -27,9 +27,6 @@ class UploadStatus(models.TextChoices):
 
 class UploadSession(UUIDModel,TimestampModel):
     user            = models.ForeignKey(User, on_delete=models.PROTECT)
-    filename        = models.CharField(max_length=255)
-    expected_size   = models.BigIntegerField()
-    sha256          = models.CharField(max_length=64)
     multipart_id    = models.CharField(max_length=255, blank=True, null=True)
     idempotency_key = models.CharField(max_length=255, unique=True)
     status          = models.CharField(max_length=20, choices=UploadStatus, default=UploadStatus.INIT)

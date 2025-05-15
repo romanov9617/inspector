@@ -27,3 +27,11 @@ class ImageInitUploadSerializer(serializers.Serializer):
 class InitUploadSerializer(serializers.Serializer):
 
     files = ImageInitUploadSerializer(many=True)
+
+
+class STSCredentialsSerializer(serializers.Serializer):
+    access_key_id     = serializers.CharField()
+    secret_access_key = serializers.CharField()
+    session_token     = serializers.CharField()
+    bucket = serializers.CharField()
+    key = serializers.CharField()
