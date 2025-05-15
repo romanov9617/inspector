@@ -29,7 +29,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
             "iat": datetime.fromtimestamp(payload["iat"]),
             "jti": str(payload["jti"]),
             "sub": f"user-{user.pk}",
-            # "sub": s
+            "user_id": user.pk
             # "policy": f"user-{user.pk}"
         }
 

@@ -168,7 +168,7 @@ SIMPLE_JWT = {
   "SIGNING_KEY":SIGNING_KEY,
   "VERIFYING_KEY": VERIFYING_KEY,
   "USER_ID_FIELD": "id",
-  "USER_ID_CLAIM": "sub",
+  "USER_ID_CLAIM": "user_id",
   "TOKEN_OBTAIN_SERIALIZER": "admin_modules.core.serializers.token.MyTokenObtainPairSerializer",
 
 }
