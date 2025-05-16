@@ -203,8 +203,8 @@ services:
     ports:
       - "8000:8000"
 
-  service_ml:
-    container_name: service_ml
+  service-ml:
+    container_name: service-ml
     build: service-ml
     tty: true
     environment:

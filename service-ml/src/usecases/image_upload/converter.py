@@ -1,8 +1,6 @@
 import os
 from pathlib import Path
 
-from faststream import Logger
-
 from src.adapter.config.config import config
 from src.domain.file import MinioDownloadConfig
 from src.domain.upload_image import ImageUploadEvent
@@ -20,15 +18,14 @@ def image_to_download_config(image: ImageUploadEvent) -> MinioDownloadConfig:
     download_dir = os.getenv("DOWNLOAD_DIR", "/tmp/")
     Path(download_dir).mkdir(parents=True, exist_ok=True)
     # Имя локального файла — берём имя объекта
-    filename = Path(record.s3.object.key).name
+    filename = Path("/".join(image.key.split("/")[1:])).name
     local_path = os.path.join(download_dir, filename)
-    Logger.info(local_path)
     # Собираем HttpUrl из строки
     endpoint = os.getenv("MINIO_ENDPOINT_URL", "http://minio:9000")
 
     return MinioDownloadConfig(
         bucket=record.s3.bucket.name,
-        key=record.s3.object.key,
+        key="/".join(image.key.split("/")[1:]),
         local_path=local_path,
         endpoint_url=endpoint,
         access_key_id=config.minio.access_key_id,

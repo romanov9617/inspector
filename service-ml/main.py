@@ -7,7 +7,6 @@ from faststream import FastStream
 from server import broker
 
 # without handle upload import broker can't subscribe it
-from src.usecases.image_upload.subscriber import handle_upload  # noqa: F401
 
 async def shutdown(loop):
     logging.info("Shutting down gracefully…")
@@ -18,13 +17,15 @@ async def shutdown(loop):
     loop.stop()
 
 async def main():
+
+    logging.info("Start server...")
     loop = asyncio.get_event_loop()
     for sig in (signal.SIGINT, signal.SIGTERM):
         loop.add_signal_handler(sig, lambda: asyncio.create_task(shutdown(loop)))
+    app = FastStream(broker)
     await app.run()
 
 
-app = FastStream(broker)
 
 if __name__ == "__main__":
     asyncio.run(main())

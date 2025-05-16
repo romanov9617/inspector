@@ -24,9 +24,9 @@ RUN poetry config virtualenvs.create false \
     && poetry install --no-dev --no-interaction --no-ansi
 
 # Copy application code
+COPY main.py server.py ./
 COPY config/ ./config
 COPY src/ ./src
-COPY main.py server.py ./
 
 #############################################
 # Final stage: runtime image

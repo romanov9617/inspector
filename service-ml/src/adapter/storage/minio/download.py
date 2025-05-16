@@ -18,11 +18,8 @@ async def download_file_from_minio(config: MinioDownloadConfig) -> None:
         region_name=config.region_name
     ) as client:
         response = await client.get_object(Bucket=config.bucket, Key=config.key)
-        print(len(response["Body"]))
-        async with response['Body'] as stream:
-            async with aiofiles.open(config.local_path, 'wb') as f:
-                while True:
-                    chunk = await stream.read(1024 * 1024)
-                    if not chunk:
-                        break
-                    await f.write(chunk)
+        body = response['Body']  # StreamingBody
+        async with aiofiles.open(config.local_path, 'wb') as f:
+            # используем iter_chunks вместо read(size)
+            async for chunk in body.iter_chunks(1024 * 1024):
+                await f.write(chunk)
