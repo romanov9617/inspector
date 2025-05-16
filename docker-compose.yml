@@ -203,6 +203,18 @@ services:
     ports:
       - "8000:8000"
 
+  service_ml:
+    container_name: service_ml
+    build: service-ml
+    tty: true
+    environment:
+      - CONFIG_PATH=./config/settings.json
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - kafka
+
 networks:
   postgres:
   kafka:

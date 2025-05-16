@@ -33,8 +33,6 @@ class Bucket(BaseModel):
 
 
 class S3ObjectUserMetadata(BaseModel):
-    # здесь userMetadata — словарь, но если вам важен только content-type,
-    # можно вынести строгое поле. Иначе заменить Dict[str, str].
     content_type: str = Field(..., alias="content-type")
 
 
@@ -85,7 +83,5 @@ class ImageUploadEvent(BaseModel):
 
     class Config:
         allow_population_by_field_name = True
-        # если нужно автоматически конвертировать ключи JSON
-        # из camelCase в snake_case и наоборот:
         alias_generator = alias_gen
         allow_population_by_field_name = True

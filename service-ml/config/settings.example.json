@@ -1,0 +1,5 @@
+{
+    "kafka_host": "kafka",
+    "kafka_port": 9092,
+    "image_uploads_topic": "image.uploads.put"
+}
