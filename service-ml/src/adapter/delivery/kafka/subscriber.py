@@ -5,7 +5,7 @@ from src.adapter.config.config import config
 from src.domain.upload_image import ImageUploadEvent
 
 
-@broker.subscriber("image.uploads.put")
+@broker.subscriber(config.image_uploads_topic)
 async def handle_upload(event: ImageUploadEvent, logger: Logger):
     if not event.key.startswith(config.image_uploads_key):
         logger.debug(f"Ignored key: {event.key}")
