@@ -16,11 +16,9 @@ def image_to_download_config(image: ImageUploadEvent) -> MinioDownloadConfig:
 
     # Директория для сохранения загруженных файлов
     download_dir = os.getenv("DOWNLOAD_DIR", "/tmp/")
-    Path(download_dir).mkdir(parents=True, exist_ok=True)
-    # Имя локального файла — берём имя объекта
-    filename = Path("/".join(image.key.split("/")[1:])).name
+    filename = Path("/".join(image.key.split("/")[1:]))
     local_path = os.path.join(download_dir, filename)
-    # Собираем HttpUrl из строки
+    os.makedirs(os.path.dirname(local_path), exist_ok=True)
     endpoint = os.getenv("MINIO_ENDPOINT_URL", "http://minio:9000")
 
     return MinioDownloadConfig(

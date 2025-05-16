@@ -7,6 +7,7 @@ from faststream import FastStream
 from server import broker
 
 # without handle upload import broker can't subscribe it
+from src.usecases.image_upload import subscriber  # noqa: F401
 
 async def shutdown(loop):
     logging.info("Shutting down gracefully…")

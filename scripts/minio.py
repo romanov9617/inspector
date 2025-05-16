@@ -32,9 +32,9 @@ def apply_user_policy(user_id: str) -> str:
 
 def upload_file():
     session = boto3.session.Session(
-    aws_access_key_id='W0OLMI73S3BDO5JG08QI',
-    aws_secret_access_key='V8VfPnp9GTV19JlFs+79NkXxuNHQBi8eXojqJjXJ',
-    aws_session_token='eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NLZXkiOiJXME9MTUk3M1MzQkRPNUpHMDhRSSIsImF1ZCI6ImFkbWluIiwiZXhwIjoxNzQ3NDM3MDM0LCJpYXQiOjE3NDczOTM4MzQsImp0aSI6IjNiOGEwMzgzMWEzMzRkYmI5MzA0YTkyNjUxMWU1NzRmIiwic3ViIjoidXNlci0zIiwidG9rZW5fdHlwZSI6ImFjY2VzcyIsInVzZXJfaWQiOjN9.mdNkc7cB-uyDV4QpUXF78tA1IGylMldfP1HAjOr1BWW1jVcHOVeg--Mkh2mGPqMfcS6JLmKD9L8cgs0n-jy2Wg'
+    aws_access_key_id='0KTUAGH314R6V2C2ZA97',
+    aws_secret_access_key='Am0qawHwKx3Byxg0OVzwbhxHgbBs1b8vVtSZawpd',
+    aws_session_token='eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NLZXkiOiIwS1RVQUdIMzE0UjZWMkMyWkE5NyIsImF1ZCI6ImFkbWluIiwiZXhwIjoxNzQ3NDY5MzY4LCJpYXQiOjE3NDc0MjYxNjgsImp0aSI6Ijg5ZDg2ZjE4ZjA1MjQ1ZTliMDY3ZDFlYjc0OGRhN2IzIiwic3ViIjoidXNlci00IiwidG9rZW5fdHlwZSI6ImFjY2VzcyIsInVzZXJfaWQiOjR9.cDRMYpLumQCmblpzUSgt4byfWq1QO74bGHHoCPyWADrByZNlWIEfB83tnnNuvV3KYm7QoCur20du9Mzyf_S6oQ'
 )
 
 # создаём клиент S3, указывая endpoint MinIO
@@ -46,9 +46,9 @@ def upload_file():
 
     # загружаем файл
     s3.upload_file(
-        Filename='test.txt',
+        Filename='0-250-ls-r1-1-23nv.png',
         Bucket='inspector',
-        Key='uploads/3/test.txt')
+        Key='uploads/4/0-250-ls-r1-1-23nv.png')
 
 # apply_user_policy("1")
 
