@@ -1,4 +1,4 @@
-import asyncio
+import asyncio  # noqa: I001
 import logging
 import signal
 
@@ -7,8 +7,7 @@ from faststream import FastStream
 from server import broker
 
 # without handle upload import broker can't subscribe it
-from src.adapter.delivery.kafka.subscriber import handle_upload  # noqa: F401
-
+from src.usecases.image_upload.subscriber import handle_upload  # noqa: F401
 
 async def shutdown(loop):
     logging.info("Shutting down gracefully…")

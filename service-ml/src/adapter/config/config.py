@@ -8,11 +8,23 @@ from src.adapter.exceptions.config import EnvVarNotDefinedException
 
 
 class Config(BaseModel):
-    kafka_host: str
-    kafka_port: int
+    kafka: "KafkaConfig"
+    minio: "MinioConfig"
+
+class KafkaConfig(BaseModel):
+    host: str
+    port: int
     image_uploads_key: str = "inspector/uploads/"
     image_uploads_topic: str
 
+
+class MinioConfig(BaseModel):
+    host: str
+    port: int
+    access_key_id: str
+    secret_access_key: str
+    session_token: str| None = None
+    region_name: str = "us-east-1"
 
 CONFIG_PATH = os.environ.get("CONFIG_PATH")
 
