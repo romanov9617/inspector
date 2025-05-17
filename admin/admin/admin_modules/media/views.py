@@ -1,22 +1,19 @@
-from django.shortcuts import get_object_or_404
-from drf_spectacular.utils import OpenApiParameter
-from drf_spectacular.utils import OpenApiResponse
+import requests  # type: ignore
 from drf_spectacular.utils import extend_schema
 from rest_framework import mixins
-from rest_framework import response
+from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
+from rest_framework.response import Response
 
-from admin.container import S3s
+from admin.settings import AWS_HOST
+from admin.settings import AWS_PORT
 from admin.settings import AWS_STORAGE_BUCKET_NAME
 from admin_modules.media.models import Image
-from admin_modules.media.models import ImageStatus
-from admin_modules.media.models import UploadSession
 from admin_modules.media.serializers import ImageSerializer
-from admin_modules.media.serializers import InitUploadSerializer
-from admin_modules.media.services import get_or_create_upload_credentials
+from admin_modules.media.serializers import STSCredentialsSerializer
+from admin_modules.media.utils import parse_sts_credentials
 
 
 class ImageViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin, viewsets.GenericViewSet):
@@ -25,145 +22,39 @@ class ImageViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin, viewsets.Gen
 
 
     @extend_schema(
-        summary="Инициализация загрузки изображений",
-        request=InitUploadSerializer,
+        request=None,  # нет тела
         responses={
-            201: OpenApiResponse(
-                description="STS credentials and upload session ID",
-                response={
-                    "type": "object",
-                    "properties": {
-                        "upload_id": {"type": "string", "format": "uuid"},
-                        "credentials": {
-                            "type": "object",
-                            "properties": {
-                                "access_key_id": {"type": "string"},
-                                "secret_access_key": {"type": "string"},
-                                "session_token": {"type": "string"},
-                                "expiration": {"type": "string", "format": "date-time"},
-                                "bucket": {"type": "string"},
-                                "region": {"type": "string"},
-                                "keys": {
-                                    "type": "array",
-                                    "items": {"type": "string"},
-                                },
-                            },
-                        },
-                    },
-                },
-            )
+            200: STSCredentialsSerializer
         },
-        parameters=[
-            OpenApiParameter(
-                name="Idempotency-Key",
-                type=str,
-                location=OpenApiParameter.HEADER,
-                required=True,
-                description="Уникальный ключ запроса для идемпотентности"
-            )
-        ],
-        tags=["media"]
+        description='Проксирует запрос к MinIO STS: AssumeRoleWithWebIdentity',
     )
-    @action(detail=False, methods=['post'], url_path='initiate', permission_classes=[IsAuthenticated])
-    def init_upload(self, request:Request):
-        serializer = InitUploadSerializer(data=request.data)
+    @action(detail=False, methods=['get'], url_path='initiate')
+    def initiate(self, request: Request):
+        auth = request.META.get('HTTP_AUTHORIZATION', '')
+        if not auth.startswith('Bearer '):
+            return Response(
+                {'detail': 'Missing or invalid Authorization header'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        web_identity_token = auth.split(' ', 1)[1]
+
+        # Собираем параметры для STS-запроса
+        params = {
+            'Action': 'AssumeRoleWithWebIdentity',
+            'Version': '2011-06-15',
+            'WebIdentityToken': web_identity_token,
+        }
+        try:
+            resp = requests.post(f"http://{AWS_HOST}:{AWS_PORT}", params=params, timeout=5)
+            resp.raise_for_status()
+            creds_data = parse_sts_credentials(resp.content)
+        except requests.RequestException as e:
+            return Response(
+                {'detail': f'Error talking to STS: {e}'},
+                status=status.HTTP_502_BAD_GATEWAY
+            )
+        creds_data["bucket"] = AWS_STORAGE_BUCKET_NAME
+        creds_data["key"] = f"uploads/{request.user.pk}/"
+        serializer = STSCredentialsSerializer(data=creds_data)
         serializer.is_valid(raise_exception=True)
-        files = serializer.validated_data["files"]
-        filenames = [f["filename"] for f in files]
-        idem_key = request.headers.get("Idempotency-Key")
-        user = request.user
-
-        session, _ = UploadSession.objects.get_or_create(
-            idempotency_key=idem_key,
-            defaults={"user": user}
-        )
-
-        for f in files:
-            file_key = f"{session.id}/{f['filename']}"
-            Image.objects.get_or_create(
-                session=session,
-                file_key=file_key,
-                defaults={
-                    "expected_size": f["expected_size"],
-                    "expected_checksum": f["expected_checksum"],
-                    "status": ImageStatus.PROCCESS_PENDING,
-                }
-            )
-
-        creds = get_or_create_upload_credentials(
-            user_id=str(user.id),
-            idem_key=idem_key,
-            upload_id=str(session.id),
-            filenames=filenames
-        )
-
-        return response.Response({
-            "upload_id": session.id,
-            "credentials": creds
-        }, status=201)
-
-    @extend_schema(
-        summary="Завершение загрузки изображений",
-        responses={
-            200: OpenApiResponse(
-                description="Список успешно загруженных и ошибочных файлов",
-                response={
-                    "type": "object",
-                    "properties": {
-                        "completed": {
-                            "type": "array",
-                            "items": {"type": "string"}
-                        },
-                        "errors": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "file_key": {"type": "string"},
-                                    "error": {"type": "string"}
-                                }
-                            }
-                        }
-                    }
-                }
-            )
-        },
-        tags=["media"]
-    )
-    @action(detail=True, methods=["post"], url_path="complete", permission_classes=[IsAuthenticated])
-    def complete_upload(self, request, pk=None):
-        session = get_object_or_404(UploadSession, id=pk, user=request.user)
-        s3 = S3s.s3_client()
-        bucket = AWS_STORAGE_BUCKET_NAME
-
-        errors = []
-        updated_images = []
-
-        for image in session.image_set.all():
-            try:
-                meta = s3.head_object(Bucket=bucket, Key=image.file_key)
-            except Exception as e:
-                errors.append({"file_key": image.file_key, "error": str(e)})
-                continue
-
-            size = meta["ContentLength"]
-            image.uploaded_size = size
-
-            if image.expected_size and image.expected_size != size:
-                image.status = ImageStatus.UPLOAD_FAILED
-                image.verified = False
-                errors.append({"file_key": image.file_key, "error": "Size mismatch"})
-            else:
-                image.status = ImageStatus.PROCCESS_PENDING  # или READY
-                image.verified = True
-
-            image.save()
-            updated_images.append(image.file_key)
-
-        session.status = "completed"
-        session.save()
-
-        return response.Response({
-            "completed": updated_images,
-            "errors": errors
-        }, status=200)
+        return Response(serializer.data, status=status.HTTP_200_OK)
