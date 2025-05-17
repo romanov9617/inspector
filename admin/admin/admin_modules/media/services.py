@@ -8,7 +8,9 @@ from admin.settings import AWS_S3_REGION_NAME
 from admin.settings import AWS_STORAGE_BUCKET_NAME
 
 
-def get_or_create_upload_credentials(user_id: str, idem_key: str, upload_id: str, filenames: list[str]):
+def get_or_create_upload_credentials(
+    user_id: str, idem_key: str, upload_id: str, filenames: list[str]
+):
     redis_key = f"upload-creds:{user_id}:{idem_key}"
     redis_client = RedisContainer.redis_client()
     # пробуем взять из кеша
@@ -26,21 +28,18 @@ def get_or_create_upload_credentials(user_id: str, idem_key: str, upload_id: str
         {
             "Effect": "Allow",
             "Action": ["s3:PutObject", "s3:PutObjectAcl", "s3:HeadObject"],
-            "Resource": f"arn:aws:s3:::{bucket}/{upload_id}/{filename}"
+            "Resource": f"arn:aws:s3:::{bucket}/{upload_id}/{filename}",
         }
         for filename in filenames
     ]
 
-    policy = {
-        "Version": "2012-10-17",
-        "Statement": statements
-    }
+    policy = {"Version": "2012-10-17", "Statement": statements}
 
     resp = sts.assume_role(
         RoleArn=role_arn,
         RoleSessionName=f"upload-{upload_id}",
         DurationSeconds=3600,
-        Policy=json.dumps(policy)
+        Policy=json.dumps(policy),
     )
     creds = resp["Credentials"]
 
@@ -51,7 +50,7 @@ def get_or_create_upload_credentials(user_id: str, idem_key: str, upload_id: str
         "expiration": creds["Expiration"].isoformat(),
         "bucket": bucket,
         "region": region,
-        "keys": [f"{upload_id}/{f}" for f in filenames]
+        "keys": [f"{upload_id}/{f}" for f in filenames],
     }
 
     # сохраним в Redis на 1 час

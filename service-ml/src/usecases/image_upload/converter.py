@@ -11,15 +11,11 @@ def image_to_download_config(image: ImageUploadEvent) -> MinioDownloadConfig:
     Конвертирует событие загрузки изображения в конфиг для скачивания из MinIO.
     Берёт первый Record и извлекает оттуда bucket и key.
     """
-    # Если нужно поддерживать несколько записей, можно итерировать по image.records
     record = image.records[0]
-
-    # Директория для сохранения загруженных файлов
-    download_dir = os.getenv("DOWNLOAD_DIR", "/tmp/")
     filename = Path("/".join(image.key.split("/")[1:]))
-    local_path = os.path.join(download_dir, filename)
+    local_path = os.path.join(config.file.download_dir, filename)
     os.makedirs(os.path.dirname(local_path), exist_ok=True)
-    endpoint = os.getenv("MINIO_ENDPOINT_URL", "http://minio:9000")
+    endpoint = f"http://{config.minio.host}:{config.minio.port}"
 
     return MinioDownloadConfig(
         bucket=record.s3.bucket.name,
