@@ -156,6 +156,20 @@ services:
       - ./deploy/docker/minio.env
     networks:
       - object-storage
+  
+  service_report:
+    build:
+      context: .
+      dockerfile: service_report/Dockerfile
+    env_file:
+      - ./deploy/docker/service_report.env
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
 
   redis:
     image: redis:7.2-alpine
