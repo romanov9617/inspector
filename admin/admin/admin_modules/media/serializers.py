@@ -7,8 +7,7 @@ User = get_user_model()
 
 
 class ImageSerializer(serializers.ModelSerializer):
-
-    uploader = serializers.PrimaryKeyRelatedField(
+    user = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(),
         default=serializers.CurrentUserDefault(),
     )
@@ -18,20 +17,17 @@ class ImageSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class ImageInitUploadSerializer(serializers.Serializer):
+class ImageCreateSerializer(serializers.Serializer):
+    file_key = serializers.CharField(max_length=512)
+    width_px = serializers.IntegerField(required=False)
+    height_px = serializers.IntegerField(required=False)
 
-    original_filename = serializers.CharField(max_length=255)
-    original_size = serializers.IntegerField()
-    original_checksum = serializers.CharField(max_length=64)
-
-class InitUploadSerializer(serializers.Serializer):
-
-    files = ImageInitUploadSerializer(many=True)
-
+class CompleteRequestSerializer(serializers.Serializer):
+    images = ImageCreateSerializer(many=True)
 
 class STSCredentialsSerializer(serializers.Serializer):
-    access_key_id     = serializers.CharField()
+    access_key_id = serializers.CharField()
     secret_access_key = serializers.CharField()
-    session_token     = serializers.CharField()
+    session_token = serializers.CharField()
     bucket = serializers.CharField()
     key = serializers.CharField()
