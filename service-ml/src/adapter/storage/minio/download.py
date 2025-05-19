@@ -1,10 +1,12 @@
+from pathlib import Path
+
 import aioboto3
 import aiofiles
 
 from src.domain.file import MinioDownloadConfig
 
 
-async def download_file_from_minio(config: MinioDownloadConfig) -> None:
+async def download_file_from_minio(config: MinioDownloadConfig) -> Path:
     """
     Асинхронно скачивает объект из MinIO по параметрам из Pydantic-модели.
     """
@@ -23,3 +25,4 @@ async def download_file_from_minio(config: MinioDownloadConfig) -> None:
             # используем iter_chunks вместо read(size)
             async for chunk in body.iter_chunks(1024 * 1024):
                 await f.write(chunk)
+        return Path(config.local_path)

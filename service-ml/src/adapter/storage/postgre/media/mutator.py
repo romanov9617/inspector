@@ -12,9 +12,12 @@ from src.interfaces.postgre.media.mutator import IMediaMutator
 
 
 class AsyncpgMediaMutator(IMediaMutator):
+
+    def __init__(self, pool: asyncpg.Pool):
+        self._pool = pool
+
     async def get_or_create(
         self,
-        pool: asyncpg.Pool,
         file_key: str,
         user_id: Optional[UUID] = None,
         status: str = ImageStatus.PROCCESS_PENDING,
@@ -24,7 +27,7 @@ class AsyncpgMediaMutator(IMediaMutator):
         Всегда width_px=None, height_px=None при создании.
         Возвращает (ImageModel, created: bool)
         """
-        async with pool.acquire() as conn:
+        async with self._pool.acquire() as conn:
             row = await conn.fetchrow(
                 "SELECT * FROM image WHERE file_key = $1", file_key
             )
@@ -71,3 +74,5 @@ class AsyncpgMediaMutator(IMediaMutator):
                 updated_at=now,
             )
             return image, True
+
+# TODO add asyncpgmutator instance
