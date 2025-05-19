@@ -61,7 +61,6 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "admin_modules.defects",
     "admin_modules.media",
-    "admin_modules.ml_models",
     "admin_modules.reports",
     "admin_modules.oidc",
     "admin_modules.users"

@@ -11,6 +11,7 @@ class Config(BaseModel):
     kafka: "KafkaConfig"
     minio: "MinioConfig"
     file: "FileDownloadConfig"
+    model: "ModelConfig"
 
 class KafkaConfig(BaseModel):
     host: str
@@ -26,6 +27,9 @@ class MinioConfig(BaseModel):
     session_token: str| None = None
     region_name: str = "us-east-1"
 
+
+class ModelConfig(BaseModel):
+    path: str
 
 class FileDownloadConfig(BaseModel):
     download_dir: str

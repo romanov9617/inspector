@@ -17,7 +17,6 @@ Including another URLconf
 
 from admin_modules.defects.urls import urlpatterns as defects_urls
 from admin_modules.media.urls import urlpatterns as media_urls
-from admin_modules.ml_models.urls import urlpatterns as ml_models_urls
 from admin_modules.oidc.views import HealthCheckView
 from admin_modules.oidc.views import JWKSView
 from admin_modules.oidc.views import OpenIDConfigurationView
@@ -42,7 +41,6 @@ urlpatterns = [
     path(f"{REGULAR_API_PREFIX}schema/", SpectacularAPIView.as_view(), name="schema"),
     *media_urls,
     *defects_urls,
-    *ml_models_urls,
     *report_urls,
     *user_urls,
     # Optional UI:

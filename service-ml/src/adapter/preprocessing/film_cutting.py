@@ -18,9 +18,10 @@
 """
 
 
-from pathlib import Path
-from PIL import Image
 import shutil
+from pathlib import Path
+
+from PIL import Image
 
 # === Правильные размеры тайлов ===
 TILE_WIDTH = 1140    # ширина одного тайла

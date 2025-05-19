@@ -12,7 +12,9 @@ print(f"Склеенная лента сохранена в: {stitched_path}")
 """
 
 from pathlib import Path
+
 from PIL import Image
+
 
 def stitch_tiles_to_ribbon(tile_dir: Path, output_path: Path):
     """
@@ -45,4 +47,3 @@ def stitch_tiles_to_ribbon(tile_dir: Path, output_path: Path):
     output_path.parent.mkdir(parents=True, exist_ok=True)
     stitched.save(output_path, format="JPEG", quality=100)
     return output_path
-

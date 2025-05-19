@@ -4,14 +4,12 @@ from rest_framework import serializers
 from admin_modules.defects.models import Defect
 from admin_modules.defects.models import DefectVersion
 from admin_modules.media.serializers import ImageSerializer
-from admin_modules.ml_models.serilaizers import MLModelSerializer
 
 User = get_user_model()
 
 class DefectSerializer(serializers.ModelSerializer):
 
     image = ImageSerializer()
-    model = MLModelSerializer()
 
     class Meta:
         model = Defect
