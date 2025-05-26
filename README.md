@@ -72,9 +72,9 @@ refactor: simplify token validation logic
 inspector/
 ├── README.md               # общий readme по проекту
 ├── docker-compose.yml      # общий docker-compose для запуска всех сервисов
-├── deploy/                 # конфигурация сторонних сервисов
-│   ├── postgres/
-│   ├── nats/
+├── deploy/docker                 # конфигурация сторонних сервисов
+│   ├── postgres.env
+│   ├── postgres.example.env
 │   └── ...
 ├── service-auth/          # сервис аутентификации
 │   ├── README.md
@@ -100,10 +100,6 @@ inspector/
 
 ---
 
-Если вы добавляете новый сервис — создайте отдельную папку, соответствующую структуре выше, и обязательно напишите README.
-
----
-
 ## 4. Pre-commit хуки
 
 В проекте рекомендуется использовать [`pre-commit`](https://pre-commit.com/) для запуска автоматических проверок кода: форматирование, статический анализ, поиск секретов и пр.
@@ -124,11 +120,69 @@ inspector/
 
 ### Используемые хуки:
 
-* **ruff** — линтинг и автофиксы по PEP8, заменяет flake8 и часть функциональности pylint.
-* **mypy** — проверка типов по аннотациям.
-* **black** — автоформатирование кода.
-* **isort** — сортировка импортов.
-* **pyupgrade** — автоматическое обновление синтаксиса под современную версию Python.
-* **pre-commit-hooks** — базовые проверки вроде `end-of-file-fixer`, `trailing-whitespace`, `check-yaml`.
+* **ruff** — линтинг и автофиксы по PEP8
+* **mypy** — проверка типов
+* **black** — автоформатирование кода
+* **isort** — сортировка импортов
+* **pyupgrade** — обновление синтаксиса Python
+* **pre-commit-hooks** — базовые проверки (`check-yaml`, `trailing-whitespace` и т.п.)
 
-Все эти хуки автоматически запускаются при каждом коммите, помогая поддерживать чистоту и качество кода. `.pre-commit-config.yaml` с нужными проверками.
+---
+
+## 5. Docker Compose: запуск и интеграция сервисов
+
+### Запуск всех сервисов:
+
+```bash
+docker-compose up -d
+```
+
+### Подключение к сервисам:
+
+| Сервис               | Адрес                   | Примечание                               |
+| -------------------- | ----------------------- | ---------------------------------------- |
+| PostgreSQL           | `localhost:5432`        | user/password из `postgres.env`          |
+| pgAdmin              | `http://localhost:5050` | UI для работы с БД                       |
+| Kafka                | `localhost:9092`        | Kafka брокер                             |
+| Schema Registry      | `http://localhost:8085` | REST-интерфейс схем                      |
+| Kafka UI             | `http://localhost:8081` | UI-интерфейс Kafka (Provectus Kafka UI)  |
+| MinIO API            | `http://localhost:9000` | S3-совместимое API, creds из `minio.env` |
+| MinIO Console UI     | `http://localhost:9001` | Web UI для управления бакетами           |
+
+
+### Авторизация Kafka UI:
+
+Логин и пароль задаются в `.env`:
+
+```
+admin / admin
+```
+
+### Авторизация pgAdmin:
+
+По умолчанию доступ через:
+
+```
+Email: pgadmin@example.com
+Пароль: admin
+```
+
+Настраивается в `pgadmin.env`
+
+### Авторизация MinioUI:
+
+Логин и пароль задаются в `.env`:
+
+По умолчанию доступ через
+```
+minioadmin / minioadmin
+```
+
+### Используемые `.env` файлы:
+
+* `postgres.env` — настройки PostgreSQL
+* `pgadmin.env` — логин/пароль для pgAdmin
+* `kafka-kraft.env` — параметры Kafka без ZooKeeper (KRaft)
+* `schema-registry.env` — включение поддержки без ZooKeeper
+* `kafka-ui.env` — конфигурация интерфейса Kafka с авторизацией
+* `minio.env` — настройки minio
